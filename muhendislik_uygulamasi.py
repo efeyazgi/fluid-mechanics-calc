@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
-from fluids.friction import friction_factor, P_drop
-from fluids.core import Reynolds
-from fluids.piping import nearest_pipe
+import fluids
 from chemicals.miscdata import lookup_any
-from fluids.fittings import K_fittings_T_junction, K_fittings_dict
 
 # --- Sayfa Ayarları ve Başlık ---
 st.set_page_config(layout="wide", page_title="Kimya Mühendisliği Hesaplayıcısı")
@@ -81,7 +78,7 @@ elif secim == 'Boru Basınç Düşüşü':
         pipe_length_pd = st.number_input("Boru Uzunluğu (m)", min_value=1.0, value=100.0, step=1.0, key='pd_length')
         nominal_diameter_pd = st.selectbox("Nominal Boru Çapı (inç)", (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0), index=3, key='pd_nps')
         
-        # Statik olarak yaygın Schedule listesi (Daha kararlı bir yaklaşım)
+        # Statik olarak yaygın Schedule listesi
         schedules = ['5', '10', '20', '30', '40', '60', '80', '100', '120', '140', '160', 'STD', 'XS', 'XXS']
         schedule_pd = st.selectbox("Boru Çizelgesi (Schedule)", schedules, index=4, key='pd_schedule') # index=4 -> '40'
         
@@ -95,13 +92,13 @@ elif secim == 'Boru Basınç Düşüşü':
             viscosity = lookup_any(fluid_name_pd, 'mu', T=T_kelvin)
             
             # Boru özelliklerini al
-            ID, _, _, roughness = nearest_pipe(NPS=nominal_diameter_pd, schedule=schedule_pd, material=pipe_material_pd)
+            ID, _, _, roughness = fluids.nearest_pipe(NPS=nominal_diameter_pd, schedule=schedule_pd, material=pipe_material_pd)
             
             area = (3.14159 * ID**2) / 4.0
             velocity = mass_flow_pd / (density * area)
-            Re = Reynolds(D=ID, rho=density, V=velocity, mu=viscosity)
-            ff = friction_factor(Re=Re, eD=roughness/ID)
-            pressure_drop_Pa = P_drop(D=ID, L=pipe_length_pd, rho=density, V=velocity, fd=ff)
+            Re = fluids.Reynolds(D=ID, rho=density, V=velocity, mu=viscosity)
+            ff = fluids.friction_factor(Re=Re, eD=roughness/ID)
+            pressure_drop_Pa = fluids.P_drop(D=ID, L=pipe_length_pd, rho=density, V=velocity, fd=ff)
             pressure_drop_bar = pressure_drop_Pa / 100000.0
 
             # --- Sonuçları Gösterme Bloğu ---
@@ -139,7 +136,7 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     st.info("Standart vana ve boru bağlantı parçaları için kayıp katsayısını (K) hesaplar. Bu katsayı, yerel basınç kayıplarını bulmak için kullanılır.")
 
     # Mevcut ek parçaların listesini al
-    available_fittings = list(K_fittings_dict.keys())
+    available_fittings = list(fluids.K_fittings_dict.keys())
 
     fitting_type = st.selectbox("Ek Parça Tipini Seçin:", available_fittings, index=available_fittings.index('gate valve, full open'))
     
@@ -147,10 +144,10 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     if fitting_type in ['T, through-flow', 'T, branch-flow']:
         q_branch = st.slider("Dallanan Akış Oranı (q_dal / q_toplam)", 0.0, 1.0, 0.5, 0.05)
         q_main = 1.0 - q_branch
-        K = K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
+        K = fluids.K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
     else:
         # Diğer ek parçalar için doğrudan K değerini al
-        K = K_fittings_dict[fitting_type]
+        K = fluids.K_fittings_dict[fitting_type]
 
     st.success(f"### Seçilen Ek Parça İçin Kayıp Katsayısı (K) = {K:.3f}")
     
