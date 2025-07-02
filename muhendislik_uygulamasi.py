@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 import fluids
-from chemicals.miscdata import lookup_any
+import chemicals
 
 # --- Sayfa Ayarları ve Başlık ---
 st.set_page_config(layout="wide", page_title="Kimya Mühendisliği Hesaplayıcısı")
 
 st.title("🧮 Fluids Kütüphanesi ile Mühendislik Hesaplayıcısı")
-st.write("Bu interaktif web uygulaması, `CalebBell/fluids` kütüphanesini kullanarak çeşitli akışkanlar dinamiği hesaplamaları yapar.")
+st.write("Bu interaktif web uygulaması, `CalebBell/fluids` ve `chemicals` kütüphanelerini kullanarak çeşitli akışkanlar dinamiği hesaplamaları yapar.")
 
 # --- Navigasyon Menüsü ---
 st.sidebar.title("Hesaplama Modülleri")
@@ -34,11 +34,11 @@ if secim == 'Akışkan Özellikleri':
     if st.button("Özellikleri Hesapla", key='fluid_prop_button'):
         try:
             # chemicals kütüphanesinden özellikleri çek
-            density = lookup_any(fluid_name, 'rho', T=T_kelvin)
-            viscosity = lookup_any(fluid_name, 'mu', T=T_kelvin)
-            heat_capacity = lookup_any(fluid_name, 'Cp', T=T_kelvin)
-            surface_tension = lookup_any(fluid_name, 'sigma', T=T_kelvin)
-            vapor_pressure = lookup_any(fluid_name, 'Psat', T=T_kelvin)
+            density = chemicals.lookup(fluid_name, 'rho', T=T_kelvin)
+            viscosity = chemicals.lookup(fluid_name, 'mu', T=T_kelvin)
+            heat_capacity = chemicals.lookup(fluid_name, 'Cp', T=T_kelvin)
+            surface_tension = chemicals.lookup(fluid_name, 'sigma', T=T_kelvin)
+            vapor_pressure = chemicals.lookup(fluid_name, 'Psat', T=T_kelvin)
 
             # Sonuçları bir DataFrame'de göster
             data = {
@@ -88,8 +88,8 @@ elif secim == 'Boru Basınç Düşüşü':
         try:
             # --- Hesaplama Bloğu ---
             T_kelvin = temp_c_pd + 273.15
-            density = lookup_any(fluid_name_pd, 'rho', T=T_kelvin)
-            viscosity = lookup_any(fluid_name_pd, 'mu', T=T_kelvin)
+            density = chemicals.lookup(fluid_name_pd, 'rho', T=T_kelvin)
+            viscosity = chemicals.lookup(fluid_name_pd, 'mu', T=T_kelvin)
             
             # Boru özelliklerini al
             ID, _, _, roughness = fluids.nearest_pipe(NPS=nominal_diameter_pd, schedule=schedule_pd, material=pipe_material_pd)
