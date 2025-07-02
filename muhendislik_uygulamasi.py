@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import fluids
 import chemicals
-from fluids.fittings import K_fittings_dict, K_fittings_T_junction
+# Kütüphane içindeki modül yapısı nedeniyle, en kararlı yöntem
+# alt modülleri doğrudan ve bir takma adla import etmektir.
+import fluids.fittings as fittings
 
 # --- Sayfa Ayarları ve Başlık ---
 st.set_page_config(layout="wide", page_title="Kimya Mühendisliği Hesaplayıcısı")
@@ -136,8 +138,8 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     st.header("🔧 Vana ve Ek Parça Kayıp Katsayısı (K)")
     st.info("Standart vana ve boru bağlantı parçaları için kayıp katsayısını (K) hesaplar. Bu katsayı, yerel basınç kayıplarını bulmak için kullanılır.")
 
-    # Mevcut ek parçaların listesini al
-    available_fittings = list(K_fittings_dict.keys())
+    # Mevcut ek parçaların listesini al (Doğru ve kararlı yöntem)
+    available_fittings = list(fittings.K_fittings_dict.keys())
 
     fitting_type = st.selectbox("Ek Parça Tipini Seçin:", available_fittings, index=available_fittings.index('gate valve, full open'))
     
@@ -145,10 +147,10 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     if fitting_type in ['T, through-flow', 'T, branch-flow']:
         q_branch = st.slider("Dallanan Akış Oranı (q_dal / q_toplam)", 0.0, 1.0, 0.5, 0.05)
         q_main = 1.0 - q_branch
-        K = K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
+        K = fittings.K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
     else:
         # Diğer ek parçalar için doğrudan K değerini al
-        K = K_fittings_dict[fitting_type]
+        K = fittings.K_fittings_dict[fitting_type]
 
     st.success(f"### Seçilen Ek Parça İçin Kayıp Katsayısı (K) = {K:.3f}")
     
