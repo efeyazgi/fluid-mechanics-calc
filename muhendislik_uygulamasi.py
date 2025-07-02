@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from fluids.friction import friction_factor
 from fluids.core import Reynolds
-from fluids.piping import nearest_pipe, pipe_schedule_lookup
+from fluids.piping import nearest_pipe
+from fluids.piping_data import pipe_schedule_lookup
 from fluids.vectorized import P_drop
 from chemicals.miscdata import lookup_any
 from fluids.fittings import K_fittings_T_junction, K_fittings_dict
