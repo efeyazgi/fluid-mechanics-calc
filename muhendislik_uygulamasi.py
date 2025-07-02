@@ -36,12 +36,14 @@ if secim == 'Akışkan Özellikleri':
 
     if st.button("Özellikleri Hesapla", key='fluid_prop_button'):
         try:
-            # chemicals kütüphanesinden özellikleri çek (Doğru fonksiyon adı 'lookup')
-            density = chemicals.lookup(fluid_name, 'rho', T=T_kelvin)
-            viscosity = chemicals.lookup(fluid_name, 'mu', T=T_kelvin)
-            heat_capacity = chemicals.lookup(fluid_name, 'Cp', T=T_kelvin)
-            surface_tension = chemicals.lookup(fluid_name, 'sigma', T=T_kelvin)
-            vapor_pressure = chemicals.lookup(fluid_name, 'Psat', T=T_kelvin)
+            # chemicals kütüphanesini doğru kullanma: Chemical nesnesi oluştur ve özelliklerine eriş
+            fluid_object = chemicals.Chemical(fluid_name, T=T_kelvin)
+            
+            density = fluid_object.rho
+            viscosity = fluid_object.mu
+            heat_capacity = fluid_object.Cp
+            surface_tension = fluid_object.sigma
+            vapor_pressure = fluid_object.Psat
 
             # Sonuçları bir DataFrame'de göster
             data = {
@@ -91,8 +93,10 @@ elif secim == 'Boru Basınç Düşüşü':
         try:
             # --- Hesaplama Bloğu ---
             T_kelvin = temp_c_pd + 273.15
-            density = chemicals.lookup(fluid_name_pd, 'rho', T=T_kelvin)
-            viscosity = chemicals.lookup(fluid_name_pd, 'mu', T=T_kelvin)
+            # chemicals kütüphanesini doğru kullanma
+            fluid_object_pd = chemicals.Chemical(fluid_name_pd, T=T_kelvin)
+            density = fluid_object_pd.rho
+            viscosity = fluid_object_pd.mu
             
             # Boru özelliklerini al
             ID, _, _, roughness = fluids.nearest_pipe(NPS=nominal_diameter_pd, schedule=schedule_pd, material=pipe_material_pd)
