@@ -34,7 +34,7 @@ if secim == 'Akışkan Özellikleri':
 
     if st.button("Özellikleri Hesapla", key='fluid_prop_button'):
         try:
-            # chemicals kütüphanesinden özellikleri çek
+            # chemicals kütüphanesinden özellikleri çek (Doğru fonksiyon adı 'lookup')
             density = chemicals.lookup(fluid_name, 'rho', T=T_kelvin)
             viscosity = chemicals.lookup(fluid_name, 'mu', T=T_kelvin)
             heat_capacity = chemicals.lookup(fluid_name, 'Cp', T=T_kelvin)
