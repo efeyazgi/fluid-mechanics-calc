@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 from fluids.friction import friction_factor
 from fluids.core import Reynolds
-from fluids.piping import nearest_pipe
-from fluids.piping_data import pipe_schedule_lookup
+from fluids.piping import nearest_pipe, piping_data
 from fluids.vectorized import P_drop
 from chemicals.miscdata import lookup_any
 from fluids.fittings import K_fittings_T_junction, K_fittings_dict
@@ -84,7 +83,7 @@ elif secim == 'Boru Basınç Düşüşü':
         nominal_diameter_pd = st.selectbox("Nominal Boru Çapı (inç)", (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0), index=3, key='pd_nps')
         
         # Schedule listesini dinamik olarak al
-        schedules = list(pipe_schedule_lookup(NPS=nominal_diameter_pd).keys())
+        schedules = list(piping_data[nominal_diameter_pd].keys())
         schedule_pd = st.selectbox("Boru Çizelgesi (Schedule)", schedules, index=schedules.index('40') if '40' in schedules else 0, key='pd_schedule')
         
         pipe_material_pd = st.selectbox("Boru Malzemesi", ('steel', 'stainless steel', 'PVC', 'cast iron'), index=0, key='pd_material')
