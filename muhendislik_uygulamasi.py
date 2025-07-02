@@ -1,16 +1,12 @@
 import streamlit as st
 import pandas as pd
 import fluids
-import chemicals
-# Kütüphane içindeki modül yapısı nedeniyle, en kararlı yöntem
-# alt modülleri doğrudan ve bir takma adla import etmektir.
-import fluids.fittings as fittings
 
 # --- Sayfa Ayarları ve Başlık ---
 st.set_page_config(layout="wide", page_title="Kimya Mühendisliği Hesaplayıcısı")
 
 st.title("🧮 Fluids Kütüphanesi ile Mühendislik Hesaplayıcısı")
-st.write("Bu interaktif web uygulaması, `CalebBell/fluids` ve `chemicals` kütüphanelerini kullanarak çeşitli akışkanlar dinamiği hesaplamaları yapar.")
+st.write("Bu interaktif web uygulaması, `CalebBell/fluids` kütüphanesini kullanarak çeşitli akışkanlar dinamiği hesaplamaları yapar.")
 
 # --- Navigasyon Menüsü ---
 st.sidebar.title("Hesaplama Modülleri")
@@ -36,14 +32,14 @@ if secim == 'Akışkan Özellikleri':
 
     if st.button("Özellikleri Hesapla", key='fluid_prop_button'):
         try:
-            # chemicals kütüphanesini doğru kullanma: Chemical nesnesi oluştur ve özelliklerine eriş
-            fluid_object = chemicals.Chemical(fluid_name, T=T_kelvin)
+            # fluids kütüphanesinin kendi Fluid nesnesini kullanma (daha kararlı)
+            fluid = fluids.Fluid(fluid_name, T=T_kelvin)
             
-            density = fluid_object.rho
-            viscosity = fluid_object.mu
-            heat_capacity = fluid_object.Cp
-            surface_tension = fluid_object.sigma
-            vapor_pressure = fluid_object.Psat
+            density = fluid.rho
+            viscosity = fluid.mu
+            heat_capacity = fluid.Cp
+            surface_tension = fluid.sigma
+            vapor_pressure = fluid.Psat
 
             # Sonuçları bir DataFrame'de göster
             data = {
@@ -93,10 +89,9 @@ elif secim == 'Boru Basınç Düşüşü':
         try:
             # --- Hesaplama Bloğu ---
             T_kelvin = temp_c_pd + 273.15
-            # chemicals kütüphanesini doğru kullanma
-            fluid_object_pd = chemicals.Chemical(fluid_name_pd, T=T_kelvin)
-            density = fluid_object_pd.rho
-            viscosity = fluid_object_pd.mu
+            fluid_pd = fluids.Fluid(fluid_name_pd, T=T_kelvin)
+            density = fluid_pd.rho
+            viscosity = fluid_pd.mu
             
             # Boru özelliklerini al
             ID, _, _, roughness = fluids.nearest_pipe(NPS=nominal_diameter_pd, schedule=schedule_pd, material=pipe_material_pd)
@@ -142,19 +137,20 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     st.header("🔧 Vana ve Ek Parça Kayıp Katsayısı (K)")
     st.info("Standart vana ve boru bağlantı parçaları için kayıp katsayısını (K) hesaplar. Bu katsayı, yerel basınç kayıplarını bulmak için kullanılır.")
 
-    # Mevcut ek parçaların listesini al (Doğru ve kararlı yöntem)
-    available_fittings = list(fittings.K_fittings_dict.keys())
+    # Kararlı bir yaklaşım olarak, yaygın kullanılan ek parçaları statik bir listede tutalım.
+    available_fittings = ['gate valve, full open', 'globe valve, full open', 'check valve, swing', 
+                          '90 deg elbow, standard', '45 deg elbow, standard', 'T, through-flow', 'T, branch-flow']
 
-    fitting_type = st.selectbox("Ek Parça Tipini Seçin:", available_fittings, index=available_fittings.index('gate valve, full open'))
+    fitting_type = st.selectbox("Ek Parça Tipini Seçin:", available_fittings)
     
     # Gerekli girdileri göster
     if fitting_type in ['T, through-flow', 'T, branch-flow']:
         q_branch = st.slider("Dallanan Akış Oranı (q_dal / q_toplam)", 0.0, 1.0, 0.5, 0.05)
         q_main = 1.0 - q_branch
-        K = fittings.K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
+        K = fluids.K_fittings_T_junction(Di=1, Qo_main=q_main, Qo_branch=q_branch, flow_main=1, flow_branch=1 if fitting_type == 'T, branch-flow' else 0)
     else:
-        # Diğer ek parçalar için doğrudan K değerini al
-        K = fittings.K_fittings_dict[fitting_type]
+        # K değerini doğrudan K_fitting fonksiyonu ile alalım (en kararlı yöntem)
+        K = fluids.K_fitting(fitting_type)
 
     st.success(f"### Seçilen Ek Parça İçin Kayıp Katsayısı (K) = {K:.3f}")
     
