@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from fluids.core import Reynolds, friction_factor
+from fluids.friction import friction_factor
+from fluids.core import Reynolds
 from fluids.piping import nearest_pipe, pipe_schedule_lookup
 from fluids.vectorized import P_drop
 from chemicals.miscdata import lookup_any
@@ -165,4 +166,3 @@ elif secim == 'Vana ve Ek Parça Kayıpları':
     
     Toplam basınç kaybını bulmak için bu yerel kayıpları, düz borudaki sürtünme kaybına eklemeniz gerekir.
     """)
-
