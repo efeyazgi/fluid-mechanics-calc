@@ -3,7 +3,6 @@ import pandas as pd
 from fluids.friction import friction_factor
 from fluids.core import Reynolds
 from fluids.piping import nearest_pipe
-from fluids.piping_utils import piping_data
 from fluids.vectorized import P_drop
 from chemicals.miscdata import lookup_any
 from fluids.fittings import K_fittings_T_junction, K_fittings_dict
@@ -83,9 +82,9 @@ elif secim == 'Boru Basınç Düşüşü':
         pipe_length_pd = st.number_input("Boru Uzunluğu (m)", min_value=1.0, value=100.0, step=1.0, key='pd_length')
         nominal_diameter_pd = st.selectbox("Nominal Boru Çapı (inç)", (0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0), index=3, key='pd_nps')
         
-        # Schedule listesini dinamik olarak al
-        schedules = list(piping_data[nominal_diameter_pd].keys())
-        schedule_pd = st.selectbox("Boru Çizelgesi (Schedule)", schedules, index=schedules.index('40') if '40' in schedules else 0, key='pd_schedule')
+        # Statik olarak yaygın Schedule listesi (Daha kararlı bir yaklaşım)
+        schedules = ['5', '10', '20', '30', '40', '60', '80', '100', '120', '140', '160', 'STD', 'XS', 'XXS']
+        schedule_pd = st.selectbox("Boru Çizelgesi (Schedule)", schedules, index=4, key='pd_schedule') # index=4 -> '40'
         
         pipe_material_pd = st.selectbox("Boru Malzemesi", ('steel', 'stainless steel', 'PVC', 'cast iron'), index=0, key='pd_material')
 
